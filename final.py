@@ -138,7 +138,48 @@ print final_app_clean
 
 # <codecell>
 
-#Copy of final cleaned result.
+#Tring to remove non existent words. Read in common english word file.
+'''
+cleaned_app_names = []
+cleaned_app_name = ""
+words_file = open("/home/rage/Desktop/play_store_scraper/eng_words.txt", "r")
+words = [word.strip() for word in words_file.readlines()]
+'''
+
+# <codecell>
+
+#Comaparing and removing.
+'''
+app_name = ""
+cleaned_names_final = []
+
+def check_closeness(individual_word):
+    for word in words:
+        if(fuzz.token_set_ratio(word, individual_word) >= 40):
+            return True
+        else:
+            return False
+
+for full_app_name in final_app_clean:
+    split_words = full_app_name.split(" ")
+    for individual_word in split_words:
+        if individual_word in words:
+            app_name = app_name + individual_word + " "
+        elif individual_word in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+            app_name = app_name + individual_word + " "
+        elif check_closeness(individual_word):
+            app_name = app_name + individual_word + " "
+        else:
+            pass
+    cleaned_names_final.append(app_name)
+    app_name = ""
+cleaned_names_final = [s.strip() for s in cleaned_names_final]
+print cleaned_names_final
+'''
+
+# <codecell>
+
+#Copy of final cleaned result.}
 search_names = final_app_clean
 
 # <codecell>
@@ -208,11 +249,11 @@ def get_app_details(app_link):
     rating =  soup.find("div", "score").text
     rating_number = soup.find("span", attrs = {"class" : "reviews-num"}).string
     downloads = soup.find("div", attrs = {"class" : "content", "itemprop" : "numDownloads"}).string
-    return {"name" : name,
-            "category" : category,
-            "rating" : rating,
-            "rating_number" : rating_number,
-            "downloads" : downloads}
+    return {"name" : name.encode('utf-8'),
+            "category" : category.encode('utf-8'),
+            "rating" : rating.encode('utf-8'),
+            "rating_number" : rating_number.encode('utf-8'),
+            "downloads" : downloads.encode('utf-8')}
 
 # <codecell>
 
@@ -231,4 +272,15 @@ print final_app_details
 # <codecell>
 
 #Woohoo it works :)
+#Exporting to csv.
+type(final_app_details)
+import csv
+keys = ["name", "rating_number", "downloads", "rating", "category"]
+f = open('apps.csv', 'wb')
+dict_writer = csv.DictWriter(f, keys)
+dict_writer.writer.writerow(keys)
+dict_writer.writerows(final_app_details)
+
+# <codecell>
+
 
